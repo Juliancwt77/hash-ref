@@ -18,8 +18,8 @@ var userSchema = mongoose.Schema({
 })
 
 userSchema.pre('save', function (next) {
-  console.log('before save hash the password')
-  console.log(this)
+  // console.log('before save hash the password')
+  // console.log(this)
 
   var user = this
 
@@ -30,8 +30,8 @@ userSchema.pre('save', function (next) {
       if (err) return next(err)
 
       user.local.password = hash
-      console.log('after hash')
-      console.log(user)
+      // console.log('after hash')
+      // console.log(user)
       next()
     })
   })
@@ -40,6 +40,22 @@ userSchema.pre('save', function (next) {
 userSchema.post('save', function () {
   // console.log('after the save, save successful')
 })
+
+userSchema.methods.sayName = function () {
+  // console.log(this)
+  // console.log('hey i can call say name from an instance')
+  // console.log('my name is ' + this.local.email)
+  // console.log('my password is ' + this.local.password)
+}
+
+userSchema.methods.authenticate = function (password, callback) {
+  console.log('given password is ' + password)
+  console.log('saved password is ' + this.local.password)
+
+  bcrypt.compare(password, this.local.password, function (err, isMatch) {
+    callback(err, isMatch)
+  })
+}
 
 var User = mongoose.model('User', userSchema)
 
@@ -50,7 +66,21 @@ var newUser = new User({
   }
 })
 
-newUser.save(function (err) {
+newUser.save(function (err, newUser) {
   if (err) console.log(err.message)
   // console.log('new user saved')
+  newUser.authenticate('test123', function (err, authenticated) {
+    if (err) console.log('not authenticated')
+    console.log('auth is ' + authenticated)
+    if (authenticated) console.log('user is authenticated')
+  })
+  // User.findOne({ local: { email: 'primaulia@gmail.com' } }, function (err, user) {
+  //   user.authenticate('test123', function (err, authenticated) {
+  //     if (err) console.log('not authenticated')
+  //     console.log('auth is ' + authenticated)
+  //     if (authenticated) console.log('user is authenticated')
+  //   })
+  // })
 })
+
+// newUser.sayName()
